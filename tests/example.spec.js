@@ -1,35 +1,47 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 
-test('fuzzy search test', async ({ page }) => {
-  await page.goto('https://carma-dev-deployments.github.io/geoportal/');
+test.describe('Fuzzy Search', () => {
+  test('should search and select an option', async ({ page }, testInfo) => {
+    // Set a longer timeout for the whole test
+    test.setTimeout(60000);
+    
+    // Navigate to the page
+    await page.goto('https://carma-dev-deployments.github.io/geoportal/');
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Geoportal/);
+    // Wait for the page to be fully loaded
+    await expect(page).toHaveTitle(/Geoportal/);
+    
+    // Wait for the search input to be visible and enabled
+    const searchInput = page.locator('.ant-select-selection-search-input');
+    await expect(searchInput).toBeVisible({ timeout: 30000 });
+    await expect(searchInput).toBeEnabled({ timeout: 5000 });
 
-  // Wait for page to fully load
-  // await page.waitForLoadState('networkidle');
+    // Click and type in the search input
+    await searchInput.click();
+    await searchInput.fill('achenbachter');
 
-  // Wait for fuzzy search container to be visible
-  // const searchInput = page.locator('.ant-select-selection-search-input');
-  // await expect(searchInput).toBeVisible({ timeout: 30000 });
+    // Wait for the dropdown wrapper to appear with retry logic
+    const dropdownWrapper = page.locator('.fuzzy-dropdownwrapper');
+    try {
+      await expect(dropdownWrapper).toBeVisible({ timeout: 15000 });
+      console.log('Dropdown wrapper is visible');
+    } catch (error) {
+      console.error('Dropdown wrapper not visible. Current page state:', {
+        url: page.url(),
+        title: await page.title(),
+        searchInputVisible: await searchInput.isVisible(),
+        pageContent: await page.content()
+      });
+      throw error;
+    }
 
-  // Click on the search input to focus it, then type 'a' (more realistic user interaction)
-  // await searchInput.click();
-  // await searchInput.fill('achenbachter');
-  
-  // Wait for the dropdown to be present in the DOM first
-  // await page.waitForSelector('.fuzzy-dropdownwrapper', { state: 'attached', timeout: 10000 });
-  
-  // Then wait for it to be visible with a longer timeout
-  // const dropdown = page.locator('.fuzzy-dropdownwrapper');
-  // await expect(dropdown).toBeVisible({ timeout: 20000 });
+    // Click on the specific dropdown option
+    const option = page.getByText('Achenbachtreppe', { exact: true });
+    await expect(option).toBeVisible({ timeout: 5000 });
+    await option.click();
 
-  // Wait for the specific option to be visible
-  // const option = page.getByText('Achenbachtreppe', { exact: true });
-  // await expect(option).toBeVisible({ timeout: 10000 });
-  // await option.click();
-
-  // Verify the dropdown is no longer visible after selection
-  // await expect(dropdown).not.toBeVisible();
+    // Verify the dropdown is no longer visible after selection
+    await expect(dropdownWrapper).not.toBeVisible();
+  });
 });
