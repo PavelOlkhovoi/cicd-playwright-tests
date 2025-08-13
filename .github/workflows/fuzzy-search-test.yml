@@ -26,7 +26,7 @@ jobs:
       run: npx playwright install --with-deps chromium
       
     - name: Run Fuzzy Search Test (2 times) with debugging
-      run: npx playwright test tests/example.spec.js --project=chromium --repeat-each=2 --trace=on --video=on
+      run: npx playwright test tests/example.spec.js --project=chromium --repeat-each=2
       
     - name: Upload Playwright Report
       uses: actions/upload-artifact@v4
