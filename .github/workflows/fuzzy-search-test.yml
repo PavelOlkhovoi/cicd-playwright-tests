@@ -25,8 +25,8 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps chromium
       
-    - name: Run Fuzzy Search Test (10 times)
-      run: npx playwright test tests/example.spec.js --project=chromium --repeat-each=10
+    - name: Run Fuzzy Search Test (2 times) with debugging
+      run: npx playwright test tests/example.spec.js --project=chromium --repeat-each=2 --trace=on --video=on
       
     - name: Upload Playwright Report
       uses: actions/upload-artifact@v4
@@ -34,4 +34,12 @@ jobs:
       with:
         name: playwright-report
         path: playwright-report/
+        retention-days: 30
+        
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: test-results/
         retention-days: 30
